@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(hector_control)
-set(CMAKE_CXX_STANDARD 14)
-include_directories(${CMAKE_BINARY_DIR})
-set(CMAKE_C_FLAGS "-O3  -ggdb  -march=native -std=gnu99 -I.")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS "-lboost_system -fext-numeric-literals -O3") 
-add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
+add_compile_options(-std=c++11)
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set(CMAKE_C_FLAGS "-O3  -ggdb  -march=native -std=gnu99 -I.")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
+# set(CMAKE_CXX_FLAGS "-lboost_system -fext-numeric-literals -O3") 
+add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0) 
+# EIGEN_STACK_ALLOCATION_LIMIT - defines the maximum bytes for a buffer to be allocated on the stack. 
+# For internal temporary buffers, dynamic memory allocation is employed as a fall back. For fixed-size
+# matrices or arrays, exceeding this threshold raises a compile time assertion. Use 0 to set no limit. 
+# Default is 128 KB.
 find_package(catkin REQUIRED COMPONENTS
     controller_manager
     genmsg
@@ -28,6 +33,7 @@ catkin_package(
     unitree_legged_msgs 
 )
 
+include_directories(${CMAKE_BINARY_DIR})
 include_directories(
     # include
     ${Boost_INCLUDE_DIR}
