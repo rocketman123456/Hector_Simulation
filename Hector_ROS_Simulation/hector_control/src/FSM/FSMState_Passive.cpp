@@ -1,6 +1,6 @@
 #include "../../include/FSM/FSMState_Passive.h"
 
-FSMState_Passive::FSMState_Passive(ControlFSMData *data):
+FSMState_Passive::FSMState_Passive(std::shared_ptr<ControlFSMData> data):
                   FSMState(data, FSMStateName::PASSIVE, "passive"){}
 
 void FSMState_Passive::enter()

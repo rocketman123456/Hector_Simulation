@@ -7,7 +7,7 @@
 class FSMState_Walking: public FSMState
 {
     public:
-        FSMState_Walking(ControlFSMData *data);
+        FSMState_Walking(std::shared_ptr<ControlFSMData> data);
         ~FSMState_Walking(){}
         void enter();
         void run();

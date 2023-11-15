@@ -1,48 +1,40 @@
-#include <iostream>
-#include <unistd.h>
-#include <csignal>
+#include <GLFW/glfw3.h>
+#include <mujoco/mjmodel.h>
+#include <mujoco/mjvisualize.h>
+#include <mujoco/mujoco.h>
+#include <ros/package.h>
 #include <sched.h>
+#include <std_msgs/Bool.h>
+#include <unistd.h>
+#include <chrono>
+#include <csignal>
+#include <iostream>
+#include <memory>
 #include <string>
-
+#include "../include/FSM/FSM.h"
 #include "../include/common/ControlFSMData.h"
 #include "../include/common/OrientationEstimator.h"
 #include "../include/common/PositionVelocityEstimator.h"
-#include "../include/interface/CheatIO.h"
-#include "../include/FSM/FSM.h"
-
-#include "std_msgs/Bool.h"
-
-bool running = true;
-bool pauseFlag = true;
-
-void ShutDown(int sig) {
-  std::cout << "stop" << std::endl;
-  running = false;
-}
-
-void callback(std_msgs::Bool::ConstPtr msg) {
-  if (msg->data) {
-    std::cout << "pause" << std::endl;
-    pauseFlag = true;
-  } else {
-    std::cout << "resume" << std::endl;
-    pauseFlag = false;
-  }
-}
+#include "../include/interface/MujocoIO.h"
+#include "glfw/glfw_adapter.h"
+#include "interface/CheatIO.h"
+#include "ros/node_handle.h"
+#include "ros/subscriber.h"
+#include "simulation.h"
 
 int main(int argc, char** argv) {
+  // Get mujoco xml path
+  std::string path = ros::package::getPath("hector_description");
+  path += "/mjcf/hector.xml";
+  std::cout << "path: " << path << std::endl;
+  std::shared_ptr<Simulation> sim = std::make_shared<Simulation>(path);
+  auto last = std::chrono::high_resolution_clock::now();
+
+  // ros::init(argc, argv, "hector_control");
+  // ros::NodeHandle nh;
   IOInterface* ioInter;
-  ros::init(argc, argv, "hector_control", ros::init_options::AnonymousName);
-  ros::NodeHandle nh;
-  ros::Subscriber simStatesub = nh.subscribe("/pauseFlag", 1, callback);
-  ros::AsyncSpinner subSpinner(4);  // one threads
-  subSpinner.start();
-  std::string robot_name = "hector";
-  std::cout << "robot name " << robot_name << std::endl;
-
-  ioInter = new CheatIO(robot_name,nh);
-  ros::Rate rate(1000);
-
+  ioInter = new MujocoIO("hector",sim);
+  // ioInter = new CheatIO("hector",nh);
   double dt = 0.001;
   Biped biped;
   biped.setBiped();
@@ -74,14 +66,17 @@ int main(int argc, char** argv) {
 
   std::shared_ptr<FSM> _FSMController = std::make_shared<FSM>(_controlData);
 
-  // signal(SIGINT, ShutDown);
-
-  while (ros::ok()) {
-    if (!pauseFlag) _FSMController->run();
-    rate.sleep();
+  // main loop
+  while (!glfwWindowShouldClose(sim->window)) {
+    _FSMController->run();
+    // sim->Step();
+    // // get current time
+    // auto now = std::chrono::high_resolution_clock::now();
+    // // get time difference
+    // auto time = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
+    // last = now;
+    // std::cout << "time: " << time.count() << std::endl;
   }
-  ros::waitForShutdown();
 
   return 0;
-
 }

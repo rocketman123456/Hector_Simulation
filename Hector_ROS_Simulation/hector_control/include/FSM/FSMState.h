@@ -13,7 +13,7 @@
 class FSMState
 {
     public:
-        FSMState(ControlFSMData *data, FSMStateName stateName, std::string stateNameStr);
+        FSMState(std::shared_ptr<ControlFSMData> data, FSMStateName stateName, std::string stateNameStr);
 
         virtual void enter() = 0;
         virtual void run() = 0;
@@ -24,10 +24,10 @@ class FSMState
         std::string _stateNameStr;
 
     protected:
-        ControlFSMData *_data;
+        std::shared_ptr<ControlFSMData> _data;
         FSMStateName _nextStateName;
 
-        LowlevelCmd *_lowCmd;
+        std::shared_ptr<LowlevelCmd> _lowCmd;
         LowlevelState *_lowState;
         UserValue _userValue;
 };

@@ -4,8 +4,8 @@ from mujoco_base import MuJoCoBase
 from mujoco.glfw import glfw
 import rospy
 import rospkg
-from std_msgs.msg import Float32MultiArray
-from geometry_msgs.msg import Pose
+from std_msgs.msg import Float32MultiArray,Bool
+from geometry_msgs.msg import Pose,Twist
 
 
 class HectorSim(MuJoCoBase):
@@ -21,7 +21,23 @@ class HectorSim(MuJoCoBase):
     # * Set subscriber and publisher
     self.pubJoints = rospy.Publisher('/jointsPosVel', Float32MultiArray, queue_size=10)
     self.pubPose = rospy.Publisher('/bodyPose', Pose, queue_size=10)
-    rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback)
+    self.pubTwist = rospy.Publisher('/bodyTwist', Twist, queue_size=10)
+
+    rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback) 
+    # * show the model
+    mj.mj_step(self.model, self.data)
+    # enable contact force visualization
+    self.opt.flags[mj.mjtVisFlag.mjVIS_CONTACTFORCE] = True
+
+    # get framebuffer viewport
+    viewport_width, viewport_height = glfw.get_framebuffer_size(
+        self.window)
+    viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+    # Update scene and render
+    mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam,
+                        mj.mjtCatBit.mjCAT_ALL.value, self.scene)
+    mj.mjr_render(viewport, self.scene, self.context)
+    
 
   def controlCallback(self, data):
     self.data.ctrl[:] = data.data[:]
@@ -41,17 +57,24 @@ class HectorSim(MuJoCoBase):
     while not glfw.window_should_close(self.window):
       simstart = self.data.time
 
-      while (self.data.time - simstart <= 1.0/60.0):
+      while (self.data.time - simstart <= 1.0/60.0 and not self.pause_flag):
+
         # Step simulation environment
         mj.mj_step(self.model, self.data)
         # * Publish joint positions and velocities
         jointsPosVel = Float32MultiArray()
-        jointsPosVel.data = np.concatenate((self.data.qpos, self.data.qvel))
+        # get last 10 element of qpos and qvel
+        qp = self.data.qpos[-10:].copy()
+        qv = self.data.qvel[-10:].copy()
+        jointsPosVel.data = np.concatenate((qp,qv))
+
         self.pubJoints.publish(jointsPosVel)
         # * Publish body pose
         bodyPose = Pose()
         pos = self.data.sensor('BodyPos').data.copy()
         ori = self.data.sensor('BodyQuat').data.copy()
+        # pos = self.data.qpos[:3].copy()
+        # ori = self.data.qpos[3:7].copy()
         bodyPose.position.x = pos[0]
         bodyPose.position.y = pos[1]
         bodyPose.position.z = pos[2]
@@ -60,6 +83,19 @@ class HectorSim(MuJoCoBase):
         bodyPose.orientation.z = ori[3]
         bodyPose.orientation.w = ori[0]
         self.pubPose.publish(bodyPose)
+        # * Publish body twist
+        bodyTwist = Twist()
+        vel = self.data.sensor('BodyVel').data.copy()
+        # get body velocity in world frame
+        vel = self.data.qvel[:3].copy()
+        angVel = self.data.sensor('BodyGyro').data.copy()
+        bodyTwist.linear.x = vel[0]
+        bodyTwist.linear.y = vel[1]
+        bodyTwist.linear.z = vel[2]
+        bodyTwist.angular.x = angVel[0]
+        bodyTwist.angular.y = angVel[1]
+        bodyTwist.angular.z = angVel[2]
+        self.pubTwist.publish(bodyTwist)
 
       if self.data.time >= self.simend:
           break

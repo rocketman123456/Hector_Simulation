@@ -1,7 +1,7 @@
 <mujoco model="hector_description">
   <compiler angle="radian" meshdir="../meshes/" />
   <statistic meansize="0.136507" extent="0.807636" center="-0.0411915 -9.89338e-05 -0.229264" />
-  <option timestep="0.002"/>
+  <option timestep="0.001"/>
   <asset>
     <mesh name="body" file="body.STL" />
     <mesh name="L_hip1" file="L_hip1.STL" />
@@ -18,13 +18,17 @@
       rgb2=".2 .3 .4" width="300" height="300" />
     <material name="grid" texture="grid" texrepeat="8 8" reflectance=".1" />
   </asset>
+  <contact>
+    <exclude name="1" body1 = "L_hip2" body2="L_thigh"/>
+  </contact>
   <worldbody>
     <light name="top" pos="0 0 10" castshadow="false" />
     <geom size="10 10 .01" type="plane" material="grid" />
-    <body name="base" pos="0 0 0.9">
+    <body name="base" pos="0.0 0. 0.58">
       <inertial pos="0. 0. 0." euler="0. 0. 0."
         mass="5.7" diaginertia="0.0463619 0.036636 0.024569" />
-      <freejoint/>
+      <freejoint/> 
+      <!-- <joint name="base_joint" type="slide" pos="0 0 0" axis="0 0 1" range="-3.14 3.14" damping="0.1" /> -->
       <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="body" />
       <geom size="0.0625 0.095 0.124" type="box" rgba="1 1 1 0" />
       <geom size="0.0005 0.0005 0.0005" type="box" contype="0" conaffinity="0" group="1" density="0"
@@ -171,6 +175,7 @@
     <jointvel name="R_calf_vel" joint="R_calf_joint" />
     <jointvel name="R_toe_vel" joint="R_toe_joint" />
     <accelerometer name="BodyAcc" site="imu"/>
+    <velocimeter name="BodyVel" site="imu"/>
     <gyro name="BodyGyro" site="imu"/>
     <framepos name="BodyPos" objtype="site" objname="imu"/>
     <framequat name="BodyQuat" objtype="site" objname="imu"/>

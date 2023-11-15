@@ -1,6 +1,7 @@
 import mujoco as mj
 from mujoco.glfw import glfw
-
+import rospy
+from std_msgs.msg import Bool 
 
 class MuJoCoBase():
     def __init__(self, xml_path):
@@ -10,7 +11,8 @@ class MuJoCoBase():
         self.button_right = False
         self.lastx = 0
         self.lasty = 0
-
+        self.pause_flag = True
+        self.pubSimState = rospy.Publisher('/pauseFlag',Bool, queue_size=10)
         # MuJoCo data structures
         self.model = mj.MjModel.from_xml_path(xml_path)  # MuJoCo model
         self.data = mj.MjData(self.model)                # MuJoCo data
@@ -40,6 +42,13 @@ class MuJoCoBase():
         if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
             mj.mj_resetData(self.model, self.data)
             mj.mj_forward(self.model, self.data)
+        elif act ==glfw.PRESS and key== glfw.KEY_SPACE:
+            self.pause_flag = not self.pause_flag
+            mj.mj_forward(self.model, self.data)
+            simState = Bool()
+            simState.data = self.pause_flag
+            self.pubSimState.publish(simState)
+            
 
     def mouse_button(self, window, button, act, mods):
         # update button state

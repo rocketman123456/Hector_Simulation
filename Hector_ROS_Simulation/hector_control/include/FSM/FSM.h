@@ -1,6 +1,7 @@
 #ifndef FSM_H
 #define FSM_H
 
+#include <memory>
 #include "FSMState.h"
 #include "FSMState_Passive.h"
 #include "FSMState_Walking.h"
@@ -21,14 +22,14 @@ struct FSMStateList{
 
 class FSM{
     public:
-        FSM(ControlFSMData *data);
+        FSM(std::shared_ptr<ControlFSMData> data);
         ~FSM();
         void initialize();
         void run();
     private:
         FSMState* getNextState(FSMStateName stateName);
         bool checkSafty();
-        ControlFSMData *_data;
+        std::shared_ptr<ControlFSMData> _data;
         FSMState *_currentState;
         FSMState *_nextState;
         FSMStateName _nextStateName;

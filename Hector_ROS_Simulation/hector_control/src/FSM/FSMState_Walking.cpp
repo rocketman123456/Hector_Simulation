@@ -1,6 +1,6 @@
 #include "../../include/FSM/FSMState_Walking.h"
 
-FSMState_Walking::FSMState_Walking(ControlFSMData *data)
+FSMState_Walking::FSMState_Walking(std::shared_ptr<ControlFSMData> data)
                  :FSMState(data, FSMStateName::WALKING, "walking"),
                   Cmpc(0.001, 40) {}
 
