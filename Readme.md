@@ -1,3 +1,17 @@
+# Hector simulation in mujoco
+
+## How to start the simulation and controller?
+```
+roscore
+# in folder mujoco_sim/script/
+python hector_sim.py
+# in workspace, after source 
+rosrun hector_control hector_ctrl
+```
+The simulation is synchronized with controller, on the mujoco window, press 'space' key to resume or pause the simulation and control.
+
+
+---
 # Hector Open-source Simulation Software in ROS
 
 ## HECTOR: Humanoid for Enhanced ConTrol and Open-source Research
