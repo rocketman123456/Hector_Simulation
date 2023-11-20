@@ -24,10 +24,10 @@
   <worldbody>
     <light name="top" pos="0 0 10" castshadow="false" />
     <geom size="10 10 .01" type="plane" material="grid" />
-    <body name="base" pos="0.0 0. 0.58">
+    <body name="base" pos="0.0 0. 0.68">
       <inertial pos="0. 0. 0." euler="0. 0. 0."
         mass="5.7" diaginertia="0.0463619 0.036636 0.024569" />
-      <freejoint/> 
+      <!-- <freejoint/>  -->
       <!-- <joint name="base_joint" type="slide" pos="0 0 0" axis="0 0 1" range="-3.14 3.14" damping="0.1" /> -->
       <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="1 1 1 1" mesh="body" />
       <geom size="0.0625 0.095 0.124" type="box" rgba="1 1 1 0" />
@@ -142,7 +142,17 @@
 
   </worldbody>
   <actuator>
-    <motor name="L_hip" gear="1" joint="L_hip_joint" />
+  <position name="L_hip" joint="L_hip_joint" kp="10"/>
+    <position name="L_hip2" joint="L_hip2_joint" kp="10"/>
+    <position name="L_thigh" joint="L_thigh_joint" kp="10"/>
+    <position name="L_calf" joint="L_calf_joint" kp="10"/>
+    <position name="L_toe" joint="L_toe_joint" kp="10"/>
+    <position name="R_hip" joint="R_hip_joint" kp="10"/>
+    <position name="R_hip2" joint="R_hip2_joint" kp="10"/>
+    <position name="R_thigh" joint="R_thigh_joint" kp="10"/>
+    <position name="R_calf" joint="R_calf_joint" kp="10"/>
+    <position name="R_toe" joint="R_toe_joint" kp="10"/>
+    <!-- <motor name="L_hip" gear="1" joint="L_hip_joint" />
     <motor name="L_hip2" gear="1" joint="L_hip2_joint" />
     <motor name="L_thigh" gear="1" joint="L_thigh_joint" />
     <motor name="L_calf" gear="1" joint="L_calf_joint" />
@@ -151,7 +161,7 @@
     <motor name="R_hip2" gear="1" joint="R_hip2_joint" />
     <motor name="R_thigh" gear="1" joint="R_thigh_joint" />
     <motor name="R_calf" gear="1" joint="R_calf_joint" />
-    <motor name="R_toe" gear="1" joint="R_toe_joint" />
+    <motor name="R_toe" gear="1" joint="R_toe_joint" /> -->
   </actuator>
   <sensor>
     <jointpos name="L_hip_pos" joint="L_hip_joint" />

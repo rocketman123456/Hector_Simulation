@@ -7,19 +7,19 @@ class Biped{
   public:
     void setBiped(){
         
-           mass = 13.856;
+           mass = 4.8;
 
             leg_offset_x = 0.0;
-            leg_offset_y = 0.075;
-            leg_offset_z = 0.;
+            leg_offset_y = 0.047;//0.057;
+            leg_offset_z = -0.1360;//-0.125;
 
             leg_offset_x2 = 0.0;
-            leg_offset_y2 = 0.075;
-            leg_offset_z2 = 0.;
+            leg_offset_y2 = 0.047;//0.057;
+            leg_offset_z2 = -0.136;
 
-            hipLinkLength = 0.0; // hip offset in const.xacro
-            thighLinkLength = 0.15;
-            calfLinkLength = 0.16;
+            hipLinkLength = 0.038; // hip offset in const.xacro
+            thighLinkLength = 0.22;
+            calfLinkLength = 0.22;
         
     }
     int robot_index; // 1 for Aliengo, 2 for A1

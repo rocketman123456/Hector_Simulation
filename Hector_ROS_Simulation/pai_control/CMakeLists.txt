@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(hector_control)
+project(pai_control)
 add_compile_options(-std=c++11)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -63,8 +63,8 @@ list(REMOVE_ITEM SRC_LIST "src/interface/MujocoIO.cpp")
   #  message(STATUS "source file: ${_source}")
 # endforeach()
 
-add_executable(hector_ctrl src/main.cpp  src/simulation.cpp ${SRC_LIST} )
-target_link_libraries(hector_ctrl ${catkin_LIBRARIES} qpOASES -pthread lcm mujoco::mujoco glfw
+add_executable(pai_ctrl src/main.cpp  src/simulation.cpp ${SRC_LIST} )
+target_link_libraries(pai_ctrl ${catkin_LIBRARIES} qpOASES -pthread lcm mujoco::mujoco glfw
 )
 
 # add_executable(mj_sim_node src/mjSim.cpp src/simulation.cpp 
