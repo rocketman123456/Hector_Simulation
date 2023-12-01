@@ -37,6 +37,7 @@ void FSMState_Walking::run()
     Cmpc.setGaitNum(2); // 2 for walking
     Cmpc.run(*_data);
 
+    // 利用mpc计算出来的支反力，和静力雅可比矩阵，计算出关节力
     _data->_legController->updateCommand(_data->_lowCmd);  
 }
 

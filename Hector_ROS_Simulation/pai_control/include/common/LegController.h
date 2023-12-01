@@ -30,7 +30,9 @@ SOFTWARE.
 #include "../messages/LowLevelCmd.h"
 #include "Biped.h"
 #include <memory>
-
+#include "pinocchio/parsers/urdf.hpp"
+#include "pinocchio/algorithm/kinematics.hpp"
+#include "pinocchio/algorithm/jacobian.hpp"
 
 /*!
  * Data sent from control algorithm to legs
@@ -83,7 +85,7 @@ SOFTWARE.
         
         void zeroCommand();
         void edampCommand(double gain);
-        void updateData(const LowlevelState* state);
+        void updateData(const LowlevelState* state); //从LowlevelState中提取关节数据，并计算足端位置、速度、雅可比矩阵
         void updateCommand(std::shared_ptr<LowlevelCmd> cmd);
         void setEnabled(bool enabled) {_legsEnabled = enabled;};
 
