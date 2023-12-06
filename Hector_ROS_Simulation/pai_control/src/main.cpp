@@ -55,8 +55,8 @@ int main(int argc, char** argv) {
   StateEstimate stateEstimate;
   StateEstimatorContainer* stateEstimator = new StateEstimatorContainer(state, legController->data, &stateEstimate);
 
-  stateEstimator->addEstimator<CheaterOrientationEstimator>();
-  stateEstimator->addEstimator<CheaterPositionVelocityEstimator>();
+  stateEstimator->addEstimator<CheaterOrientationEstimator>(); //用于估计机器人的姿态（包括四元数和欧拉角）和角速度（包括世界坐标系下的角速度和机体坐标系下的角速度）
+  stateEstimator->addEstimator<CheaterPositionVelocityEstimator>(); //用于估计机器人的位置和速度（包括世界坐标系下的速度和机体坐标系下的速度）
 
   std::cout << "setup state etimator" << std::endl;
 

@@ -6,6 +6,7 @@
  */
 void CheaterOrientationEstimator::run() {
   //std::cout << "orientation" << std::endl;
+  // 更新的是父类中的成员变量
   this->_stateEstimatorData.result->orientation[0] =
       this->_stateEstimatorData.lowState->imu.quaternion[0];
   this->_stateEstimatorData.result->orientation[1] =

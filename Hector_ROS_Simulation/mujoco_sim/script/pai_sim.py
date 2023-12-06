@@ -18,13 +18,16 @@ class HectorSim(MuJoCoBase):
     # print('Actuator forces:', self.data.qfrc_actuator)
     # print('Actoator controls:', self.data.ctrl)
     # mj.set_mjcb_control(self.controller)
+    # Set initial joint positions
+    self.data.qpos[-10:] = np.array([ 0.0, 0.0, -0.52, 1.04, -0.52, 
+                                      0.0, 0.0, 0.52, -1.04, 0.52])
+
     totalMass = sum(self.model.body_mass)
     print('total mass: ', totalMass)
     # * Set subscriber and publisher
     self.pubJoints = rospy.Publisher('/jointsPosVel', Float32MultiArray, queue_size=10)
     self.pubPose = rospy.Publisher('/bodyPose', Pose, queue_size=10)
     self.pubTwist = rospy.Publisher('/bodyTwist', Twist, queue_size=10)
-
     rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback) 
     # * show the model
     mj.mj_step(self.model, self.data)
@@ -43,7 +46,6 @@ class HectorSim(MuJoCoBase):
 
   def controlCallback(self, data):
     d = list(data.data[:])
-    d[0],d[1],d[5],d[6] = d[1],d[0],d[6],d[5]
     self.data.ctrl[:] = d
     
 
@@ -63,18 +65,15 @@ class HectorSim(MuJoCoBase):
       simstart = self.data.time
 
       while (self.data.time - simstart <= 1.0/60.0 and not self.pause_flag):
-
+        # get current absolute time 
+        now = glfw.get_time()
         # Step simulation environment
         mj.mj_step(self.model, self.data)
         # * Publish joint positions and velocities
         jointsPosVel = Float32MultiArray()
         # get last 10 element of qpos and qvel
         qp = self.data.qpos[-10:].copy()
-        qp[0],qp[1]=qp[1],qp[0]
-        qp[5],qp[6]=qp[6],qp[5]
         qv = self.data.qvel[-10:].copy()
-        qv[0],qv[1]=qv[1],qv[0]
-        qv[5],qv[6]=qv[6],qv[5]
         jointsPosVel.data = np.concatenate((qp,qv))
 
         self.pubJoints.publish(jointsPosVel)
@@ -95,7 +94,7 @@ class HectorSim(MuJoCoBase):
         # * Publish body twist
         bodyTwist = Twist()
         vel = self.data.sensor('BodyVel').data.copy()
-        # get body velocity in world frame
+        # * get body velocity in world frame
         vel = self.data.qvel[:3].copy()
         angVel = self.data.sensor('BodyGyro').data.copy()
         bodyTwist.linear.x = vel[0]
@@ -105,6 +104,9 @@ class HectorSim(MuJoCoBase):
         bodyTwist.angular.y = angVel[1]
         bodyTwist.angular.z = angVel[2]
         self.pubTwist.publish(bodyTwist)
+        # sleep untile 2ms don't use rospy.Rate
+        while (glfw.get_time() - now) < 0.00099:
+          pass
 
       if self.data.time >= self.simend:
           break

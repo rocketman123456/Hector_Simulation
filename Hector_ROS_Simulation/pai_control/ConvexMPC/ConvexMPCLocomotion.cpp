@@ -44,15 +44,15 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
 
   current_gait = gaitNumber;
   // integrate position setpoint
-  Vec3<double> v_des_robot(stateCommand->data.stateDes[6], stateCommand->data.stateDes[7],0);
+  Vec3<double> v_des_robot(stateCommand->data.stateDes[6], stateCommand->data.stateDes[7],0); //机身坐标系下的期望速度
   Vec3<double> v_des_world;
 
-  v_des_world = seResult.rBody.transpose() * v_des_robot;
+  v_des_world = seResult.rBody.transpose() * v_des_robot; //世界坐标系下的期望速度
   Vec3<double> v_robot = seResult.vWorld;
 
   world_position_desired[0] += dt * v_des_world[0];
   world_position_desired[1] += dt * v_des_world[1];
-  world_position_desired[2] = 0.55; //.5;;;
+  world_position_desired[2] = 0.27; //.5;;;
 
   // get then foot location in world frame
   for (int i = 0; i < 2; i++)
@@ -93,7 +93,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
     {
       pBody_des[0] = seResult.position[0];
       pBody_des[1] = seResult.position[1];
-      pBody_des[2] = 0.55;
+      pBody_des[2] = 0.27;
 
       vBody_des[0] = 0;
       vBody_des[0] = 0;
@@ -348,7 +348,7 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData &data,
                               seResult.rpy[2],    // 2
                               xStart,                                   // 3
                               yStart,                                   // 4
-                              0.55 ,   // 5
+                              0.27 ,   // 5
                               0,                                        // 6
                               0,                                        // 7
                               stateCommand->data.stateDes[11],  // 8

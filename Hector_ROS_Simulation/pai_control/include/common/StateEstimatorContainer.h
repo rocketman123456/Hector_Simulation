@@ -104,6 +104,7 @@ class StateEstimatorContainer {
         }
     }
     // run estimator
+    // 每个estimator都会更新_data
     void run(){
         for (auto estimator : _estimators){
             estimator->run();
@@ -118,7 +119,7 @@ class StateEstimatorContainer {
     void addEstimator(){
         std::cout << "add estimator" << std::endl;
         auto* estimator = new EstimatorToAdd();
-        estimator->setData(_data);
+        estimator->setData(_data); //这里把Container中的指向data的指针传给了estimator，因此estimator中的data和Container中的data指向同一个地址
         estimator->setup();
         _estimators.push_back(estimator);
     }
