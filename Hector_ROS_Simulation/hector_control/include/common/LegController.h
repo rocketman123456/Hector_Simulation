@@ -32,6 +32,7 @@ SOFTWARE.
 #include <memory>
 
 
+
 /*!
  * Data sent from control algorithm to legs
  */ 
@@ -79,6 +80,7 @@ SOFTWARE.
                 commands[i].zero();
                 data[i].zero();
             }
+
         };
         
         void zeroCommand();
@@ -93,6 +95,7 @@ SOFTWARE.
         std::string limbName[5] = {"Hip 1", "Hip 2", "Thigh", "Knee ", "Toe  "};
         std::string Side[2] = {"Left ", "Right"};        
         Biped& _biped;
+
     };
 
     void computeLegJacobianAndPosition(Biped& _biped, Vec5<double>& q, Mat65<double>* J_f_m, Mat35<double>* J_f, 

@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 find_package(gazebo REQUIRED)
 find_package(Boost REQUIRED)
+find_package(pinocchio REQUIRED)
 #find_package(qpoases)
 catkin_package(
     CATKIN_DEPENDS 
@@ -42,6 +43,7 @@ include_directories(
     ${Boost_INCLUDE_DIR}
     ${catkin_INCLUDE_DIRS}
     ${GAZEBO_INCLUDE_DIRS}
+    ${pinocchio_INCLUDE_DIRS}
     #${GAZEBO_LIBRARY_DIRS}
 )
 
@@ -65,6 +67,7 @@ list(REMOVE_ITEM SRC_LIST "src/interface/MujocoIO.cpp")
 
 add_executable(hector_ctrl src/main.cpp  src/simulation.cpp ${SRC_LIST} )
 target_link_libraries(hector_ctrl ${catkin_LIBRARIES} qpOASES -pthread lcm mujoco glfw
+${pinocchio_LIBRARIES}
 )
 
 # add_executable(mj_sim_node src/mjSim.cpp src/simulation.cpp 
