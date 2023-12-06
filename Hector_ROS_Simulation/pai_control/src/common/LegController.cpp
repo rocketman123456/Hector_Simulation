@@ -62,8 +62,10 @@ void LegController::updateCommand(std::shared_ptr<LowlevelCmd> cmd) {
   for (int i = 0; i < 2; i++) {
     Vec6<double> footForce = commands[i].feedforwardForce;
     // 利用雅可比，根据足端力计算关节力矩。这里忽略了腿的动力学，只考虑了静力学
-    Vec5<double> legtau = data[i].J_force_moment.transpose() *
-                          footForce; // force moment from stance leg
+    // Vec5<double> legtau = data[i].J_force_moment.transpose() *
+    //                       footForce; // force moment from stance leg
+    Vec5<double> legtau;
+    legtau.setZero();
 
     // for(int j = 0; j < 5; j++){
     //     std::cout << "legtau" << j << ": "<< legtau(j) << std::endl;
@@ -77,19 +79,24 @@ void LegController::updateCommand(std::shared_ptr<LowlevelCmd> cmd) {
       Vec3<double> footForce_3d =
           commands[i].kpCartesian * (commands[i].pDes - data[i].p) +
           commands[i].kdCartesian * (commands[i].vDes - data[i].v);
+      // // print pDes
+      // std::cout << "pDes: " << commands[i].pDes.transpose() << std::endl;
+      // std::cout << "p: " << data[i].p.transpose() << std::endl;
       // 摆动腿的足端在笛卡尔空间的力转换到关节空间的力矩，此处的J_force和上面的J_force_moment不同
       Vec5<double> swingtau = data[i].J_force.transpose() * footForce_3d;
 
       // maintain hip angle tracking
       // 单独控制摆动腿的髋关节，使其保持0角度
-      double kphip1 = 15;
-      double kdhip1 = 1;
-      swingtau(0) = kphip1 * (0 - data[i].q(0)) + kdhip1 * (0 - data[i].qd(0));
+      double kphip1 = 0.5;
+      double kdhip1 = 0.1;
+      swingtau(1) = kphip1 * (0 - data[i].q(1));
       // make sure foot is parallel with the ground
       // 单独控制摆动腿的脚踝关节，使其保持0角度，与地面平行
       swingtau(4) =
-          commands[i].kptoe * (-data[i].q(3) - data[i].q(2) - data[i].q(4)) +
-          commands[i].kdtoe * (0 - data[i].qd(4));
+          commands[i].kptoe * (- data[i].q(3) - data[i].q(2) - data[i].q(4));
+          // commands[i].kdtoe * (0 - data[i].qd(4));
+      //print q
+      // std::cout << "q: " << data[i].q.transpose() << std::endl;
 
       for (int j = 0; j < 5; j++) {
         legtau(j) += swingtau(j);
@@ -164,12 +171,6 @@ void computeLegJacobianAndPosition(Biped &_biped, Vec5<double> &q,
     J_leg = R_leg * J_leg;
   }
 
-  double side = -1.0; // 1 for Left legs; -1 for right legs
-  if (leg == 0) {
-    // std::cout<< "Leg Sign checked" << std::endl;
-    side = 1.0;
-  }
-  // std::cout<< "Leg Sign" << side << std::endl;
 
   // 如果指针不为nullptr,则计算雅克比
   if (J_f_m) {
@@ -183,16 +184,16 @@ void computeLegJacobianAndPosition(Biped &_biped, Vec5<double> &q,
   if (p) {
     if (leg == 0) {
       // std::cout<<"pinocchio pos:"<<std::endl;
-      p->operator()(0) = pos_foot(0) - 0.49;
+      p->operator()(0) = pos_foot(0) - 0.049;
       p->operator()(1) = pos_foot(1) - 0.075;
-      p->operator()(2) = pos_foot(2);
+      p->operator()(2) = pos_foot(2) + 0.02;
       // std::cout<<p->operator()(0)<<" "<<p->operator()(1)<<"
       // "<<p->operator()(2)<<std::endl;
     } else {
       // std::cout<<"pinocchio pos:"<<std::endl;
-      p->operator()(0) = pos_foot(0) - 0.49;
+      p->operator()(0) = pos_foot(0) - 0.049;
       p->operator()(1) = pos_foot(1) + 0.075;
-      p->operator()(2) = pos_foot(2);
+      p->operator()(2) = pos_foot(2) + 0.02;
       // std::cout<<p->operator()(0)<<" "<<p->operator()(1)<<"
       // "<<p->operator()(2)<<std::endl;
     }

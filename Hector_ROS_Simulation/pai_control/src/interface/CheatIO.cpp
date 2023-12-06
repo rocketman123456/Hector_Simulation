@@ -51,7 +51,7 @@ CheatIO::~CheatIO() { ros::shutdown(); }
 void CheatIO::sendRecv(const std::shared_ptr<LowlevelCmd> cmd,
                        LowlevelState *state) {
   // sendCmd(cmd);
-  std::cout << "send and receive once " << std::endl;
+  // std::cout << "send and receive once " << std::endl;
   sendCmdMj(cmd);
   recvState(state);
   cmdPanel->updateVelCmd(state);
@@ -83,14 +83,14 @@ void CheatIO::sendCmdMj(const std::shared_ptr<LowlevelCmd> cmd) {
 
 void CheatIO::jointsPosVelCallback(
     const std_msgs::Float32MultiArray::ConstPtr &msg) {
-  std::cout << "joints position and velocidy callback" << std::endl;
+  // std::cout << "joints position and velocidy callback" << std::endl;
   for (int i = 0; i < 10; i++) {
     _highState.motorState[i].q = msg->data[i];
     _highState.motorState[i].dq = msg->data[i + 10];
   }
 }
 void CheatIO::bodyPoseCallback(const geometry_msgs::Pose::ConstPtr &msg) {
-  std::cout << "body position and orientation callback" << std::endl;
+  // std::cout << "body position and orientation callback" << std::endl;
   _highState.position[0] = msg->position.x;
   _highState.position[1] = msg->position.y;
   _highState.position[2] = msg->position.z;
@@ -100,7 +100,7 @@ void CheatIO::bodyPoseCallback(const geometry_msgs::Pose::ConstPtr &msg) {
   _highState.imu.quaternion[3] = msg->orientation.z;
 }
 void CheatIO::bodyTwistCallback(const geometry_msgs::TwistConstPtr &msg) {
-  std::cout << "body twist callback" << std::endl;
+  // std::cout << "body twist callback" << std::endl;
   _highState.velocity[0] = msg->linear.x;
   _highState.velocity[1] = msg->linear.y;
   _highState.velocity[2] = msg->linear.z;

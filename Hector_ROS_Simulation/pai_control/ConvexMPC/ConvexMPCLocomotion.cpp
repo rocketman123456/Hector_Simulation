@@ -132,7 +132,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
     // if (firstSwing[i])
     // {
 
-      footSwingTrajectories[i].setHeight(0.1);
+      footSwingTrajectories[i].setHeight(0.05);
       Vec3<double> offset(0, side_sign[i] * 0.0, -0.0);
       // simple heuristic function
       Vec3<double> pRobotFrame = (data._biped->getHip2Location(i) + offset);
@@ -169,14 +169,14 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
   gait->setIterations(iterationsBetweenMPC, iterationCounter); 
 
   // load LCM leg swing gains
-  Kp << 300, 0, 0,
-      0, 300, 0,
-      0, 0, 300;
+  Kp << 120, 0, 0,
+      0, 120, 0,
+      0, 0, 120;
   Kp_stance =  0* Kp;
 
-  Kd << 10, 0, 0,
-      0, 10, 0,
-      0, 0, 10;
+  Kd << 5, 0, 0,
+      0, 5, 0,
+      0, 0, 5;
   Kd_stance = 0*Kd;
   // gait
   Vec2<double> contactStates = gait->getContactSubPhase();
@@ -216,7 +216,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
       if (foot == 1){
         side = 1.0;
       }
-      Vec3<double> hipOffset = {0, side*-0.02, -0.136};
+      Vec3<double> hipOffset = {0, side*-0.075, 0.};
       Vec3<double> pDesLeg = seResult.rBody * (pDesFootWorld - seResult.position) - hipOffset;
       Vec3<double> vDesLeg = seResult.rBody * (vDesFootWorld - seResult.vWorld);
       if (vDesLeg.hasNaN())
@@ -229,7 +229,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
       data._legController->commands[foot].vDes = vDesLeg;
       data._legController->commands[foot].kpCartesian = Kp;
       data._legController->commands[foot].kdCartesian = Kd;
-      data._legController->commands[foot].kptoe = 5; // 0
+      data._legController->commands[foot].kptoe = 1; // 0
       data._legController->commands[foot].kdtoe = 0.1;
       se_contactState[foot] = contactState;
     }
