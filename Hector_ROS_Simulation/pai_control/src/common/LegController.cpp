@@ -62,14 +62,10 @@ void LegController::updateCommand(std::shared_ptr<LowlevelCmd> cmd) {
   for (int i = 0; i < 2; i++) {
     Vec6<double> footForce = commands[i].feedforwardForce;
     // 利用雅可比，根据足端力计算关节力矩。这里忽略了腿的动力学，只考虑了静力学
-    // Vec5<double> legtau = data[i].J_force_moment.transpose() *
-    //                       footForce; // force moment from stance leg
-    Vec5<double> legtau;
-    legtau.setZero();
-
-    // for(int j = 0; j < 5; j++){
-    //     std::cout << "legtau" << j << ": "<< legtau(j) << std::endl;
-    // }
+    Vec5<double> legtau = data[i].J_force_moment.transpose() *
+                          footForce; // force moment from stance leg
+    // Vec5<double> legtau;
+    // legtau.setZero();
 
     // cartesian PD control for swing foot
     // 通过笛卡尔空间的kp和kd判断需不需要进行摆动腿力矩的计算

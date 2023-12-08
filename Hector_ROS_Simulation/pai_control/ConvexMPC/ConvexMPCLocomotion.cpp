@@ -169,9 +169,9 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
   gait->setIterations(iterationsBetweenMPC, iterationCounter); 
 
   // load LCM leg swing gains
-  Kp << 120, 0, 0,
-      0, 120, 0,
-      0, 0, 120;
+  Kp << 200, 0, 0,
+      0, 200, 0,
+      0, 0, 200;
   Kp_stance =  0* Kp;
 
   Kd << 5, 0, 0,

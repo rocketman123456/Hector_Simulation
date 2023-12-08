@@ -12,7 +12,7 @@
 #include <vector>
 class Biped {
 public:
-  void setBiped() {
+  Biped() {
     mass = 4.8;
     leg_offset_x2 = 0.0;
     leg_offset_y2 = 0.075; 
