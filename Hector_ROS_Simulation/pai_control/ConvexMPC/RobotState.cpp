@@ -40,9 +40,10 @@ void RobotState::set(flt* p_, flt* v_, flt* q_, flt* w_, flt* r_,flt yaw_)
     // R = R_yaw;     
     Matrix<fpt,3,1> Id;
 
-    // Id << 0.064f, 0.057f, 0.016f; //trunk
+    Id << 0.064f, 0.057f, 0.016f; //trunk
     // Id << 0.2351, 0.2230, 0.0323; // adding hips/
-    Id << 0.5413, 0.5200, 0.0691; //adding thighs
+    // Id << 0.5413, 0.5200, 0.0691; //adding thighs
+
     
     I_body.diagonal() = Id;
     // I_body << 0.5435, 0.0, -0.0321,
