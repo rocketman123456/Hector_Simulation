@@ -321,7 +321,7 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData &data,
 
     double yaw = seResult.rpy[2];
 
-    std::cout << "current position: " << p[0] << "  "<< p[1] << "  "<< p[2] << std::endl;
+    // std::cout << "current position: " << p[0] << "  "<< p[1] << "  "<< p[2] << std::endl;
 
 
     v_des_robot << stateCommand->data.stateDes[6], stateCommand->data.stateDes[7], 0;
@@ -392,11 +392,11 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData &data,
         //std::cout << "yaw traj" <<  trajAll[12*i + 2] << std::endl;
         }
       }
-      std::cout << "traj " << i << std::endl;
-      for (int j = 0; j < 12; j++) {
-        std::cout << trajAll[12 * i + j] << "  ";
-      }
-          std::cout<< " " <<std::endl;
+      // std::cout << "traj " << i << std::endl;
+      // for (int j = 0; j < 12; j++) {
+      //   std::cout << trajAll[12 * i + j] << "  ";
+      // }
+      //     std::cout<< " " <<std::endl;
 
     }
 

@@ -636,8 +636,8 @@ void solve_mpc(update_data_t *update, problem_setup *setup)
     }
   }
 
-  std::cout << "newvars" << new_vars << std::endl;
-  std::cout << "newcons" << new_cons << std::endl;
+  // std::cout << "newvars" << new_vars << std::endl;
+  // std::cout << "newcons" << new_cons << std::endl;
 
   if (1 == 1)
   {

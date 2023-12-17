@@ -10,67 +10,78 @@
 #include "../include/interface/CheatIO.h"
 #include "../include/FSM/FSM.h"
 
-bool running = true;
+#include "std_msgs/Bool.h"
 
-void ShutDown(int sig)
-{
-    std::cout << "stop" << std::endl;
-    running = false;
+bool running = true;
+bool pauseFlag = true;
+
+void ShutDown(int sig) {
+  std::cout << "stop" << std::endl;
+  running = false;
 }
 
-int main(int argc, char ** argv)
-{
-    IOInterface *ioInter;
-    ros::init(argc, argv, "hector_control", ros::init_options::AnonymousName);
-    
-    std::string robot_name = "hector";
-    std::cout << "robot name " << robot_name << std::endl;
+void callback(std_msgs::Bool::ConstPtr msg) {
+  if (msg->data) {
+    std::cout << "pause" << std::endl;
+    pauseFlag = true;
+  } else {
+    std::cout << "resume" << std::endl;
+    pauseFlag = false;
+  }
+}
 
-    ioInter = new CheatIO(robot_name);
-    ros::Rate rate(1000);
+int main(int argc, char** argv) {
+  IOInterface* ioInter;
+  ros::init(argc, argv, "hector_control", ros::init_options::AnonymousName);
+  ros::NodeHandle nh;
+  ros::Subscriber simStatesub = nh.subscribe("/pauseFlag", 1, callback);
+  ros::AsyncSpinner subSpinner(4);  // one threads
+  subSpinner.start();
+  std::string robot_name = "hector";
+  std::cout << "robot name " << robot_name << std::endl;
 
-    double dt = 0.001;
-    Biped biped;
-    biped.setBiped();
+  ioInter = new CheatIO(robot_name,nh);
+  ros::Rate rate(1000);
 
-    LegController* legController = new LegController(biped);
-    LowlevelCmd* cmd = new LowlevelCmd();
-    LowlevelState* state = new LowlevelState();
+  double dt = 0.001;
+  Biped biped;
+  biped.setBiped();
 
-    std::cout << "start setup " << std::endl;
-    StateEstimate stateEstimate;
-    StateEstimatorContainer* stateEstimator = new StateEstimatorContainer(state,
-                                                                          legController->data,
-                                                                          &stateEstimate);
+  LegController* legController = new LegController(biped);
+  std::shared_ptr<LowlevelCmd> cmd = std::make_shared<LowlevelCmd>();
+  LowlevelState* state = new LowlevelState();
 
-    stateEstimator->addEstimator<CheaterOrientationEstimator>();   
-    stateEstimator->addEstimator<CheaterPositionVelocityEstimator>();   
+  std::cout << "start setup " << std::endl;
+  StateEstimate stateEstimate;
+  StateEstimatorContainer* stateEstimator = new StateEstimatorContainer(state, legController->data, &stateEstimate);
 
-    std::cout << "setup state etimator" << std::endl;                                                             
+  stateEstimator->addEstimator<CheaterOrientationEstimator>();
+  stateEstimator->addEstimator<CheaterPositionVelocityEstimator>();
 
-    DesiredStateCommand* desiredStateCommand = new DesiredStateCommand(&stateEstimate, dt);
+  std::cout << "setup state etimator" << std::endl;
 
-    ControlFSMData* _controlData = new ControlFSMData;
-    _controlData->_biped = &biped;
-    _controlData->_stateEstimator = stateEstimator;
-    _controlData->_legController = legController;
-    _controlData->_desiredStateCommand = desiredStateCommand;
-    _controlData->_interface = ioInter;
-    _controlData->_lowCmd = cmd;
-    _controlData->_lowState = state;
+  DesiredStateCommand* desiredStateCommand = new DesiredStateCommand(&stateEstimate, dt);
 
-    FSM* _FSMController = new FSM(_controlData);
+  std::shared_ptr<ControlFSMData> _controlData = std::make_shared<ControlFSMData>();
 
-    signal(SIGINT, ShutDown);
-    
-    while(running)
-    {
-        _FSMController->run();
-        rate.sleep();
-    }
-    
-    system("stty sane");  //Terminal back to normal
-    delete _controlData;
-    return 0;
+  _controlData->_biped = &biped;
+  _controlData->_stateEstimator = stateEstimator;
+  _controlData->_legController = legController;
+  _controlData->_desiredStateCommand = desiredStateCommand;
+  _controlData->_interface = ioInter;
+  _controlData->_lowCmd = cmd;
+  _controlData->_lowState = state;
+
+  std::shared_ptr<FSM> _FSMController = std::make_shared<FSM>(_controlData);
+
+  // signal(SIGINT, ShutDown);
+
+  while (ros::ok()) {
+    if (!pauseFlag) _FSMController->run();
+    rate.sleep();
+  }
+  ros::waitForShutdown();
+
+  return 0;
 
 }

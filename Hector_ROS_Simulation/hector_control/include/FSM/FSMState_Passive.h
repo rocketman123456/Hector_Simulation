@@ -6,7 +6,7 @@
 class FSMState_Passive: public FSMState
 {
     public:
-        FSMState_Passive(ControlFSMData *data);
+        FSMState_Passive(std::shared_ptr<ControlFSMData> data);
         void enter();
         void run();
         void exit();

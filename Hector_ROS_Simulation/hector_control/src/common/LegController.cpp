@@ -1,4 +1,5 @@
 #include "../../include/common/LegController.h"
+#include <memory>
 #include <eigen3/Eigen/Core>
 
 // upper level of joint controller 
@@ -45,7 +46,7 @@ void LegController::updateData(const LowlevelState* state){
             data[leg].q(j) = state->motorState[leg*5+j].q;
             data[leg].qd(j) = state->motorState[leg*5+j].dq;
             data[leg].tau(j) = state->motorState[leg*5+j].tauEst;
-            std::cout << "motor joint data" << leg*5+j << ": "<< data[leg].q(j) << std::endl;
+            // std::cout << "motor joint data" << leg*5+j << ": "<< data[leg].q(j) << std::endl;
         }
 
         computeLegJacobianAndPosition(_biped, data[leg].q, &(data[leg].J_force_moment), &(data[leg].J_force), &(data[leg].p), leg);
@@ -54,15 +55,15 @@ void LegController::updateData(const LowlevelState* state){
 
 }
 
-void LegController::updateCommand(LowlevelCmd* cmd){
+void LegController::updateCommand(std::shared_ptr<LowlevelCmd> cmd){
 
     for (int i = 0; i < 2; i++){
         Vec6<double> footForce = commands[i].feedforwardForce;
         Vec5<double> legtau = data[i].J_force_moment.transpose() * footForce; // force moment from stance leg
         
-        for(int j = 0; j < 5; j++){
-            std::cout << "legtau" << j << ": "<< legtau(j) << std::endl;
-        }
+        // for(int j = 0; j < 5; j++){
+        //     std::cout << "legtau" << j << ": "<< legtau(j) << std::endl;
+        // }
 
         // cartesian PD control for swing foot
         if(commands[i].kpCartesian(0,0) != 0 || commands[i].kdCartesian(0,0) != 0)
@@ -93,7 +94,7 @@ void LegController::updateCommand(LowlevelCmd* cmd){
             cmd->motorCmd[i*5+j].dq = commands[i].qdDes(j);
             cmd->motorCmd[i*5+j].Kp = commands[i].kpJoint(j,j);
             cmd->motorCmd[i*5+j].Kd = commands[i].kdJoint(j,j);
-            std::cout << Side[i] << " " << limbName[j] <<" torque cmd  =  " << cmd->motorCmd[i*5+j].tau << std::endl;            
+            // std::cout << Side[i] << " " << limbName[j] <<" torque cmd  =  " << cmd->motorCmd[i*5+j].tau << std::endl;            
         }
 
         commands[i].tau << 0, 0, 0, 0, 0; // zero torque command to prevent interference

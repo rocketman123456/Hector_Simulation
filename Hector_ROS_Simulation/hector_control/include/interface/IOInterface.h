@@ -43,7 +43,7 @@ class IOInterface
     public:
         IOInterface(){}
         ~IOInterface(){}
-        virtual void sendRecv(const LowlevelCmd *cmd, LowlevelState *state) = 0;
+        virtual void sendRecv(const std::shared_ptr<LowlevelCmd> cmd, LowlevelState *state) = 0;
         void zeroCmdPanel(){cmdPanel->setZero();}
         void setPassive(){cmdPanel->setPassive();}
         CmdPanel *cmdPanel;

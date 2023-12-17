@@ -1,7 +1,7 @@
 #include "../../include/FSM/FSM.h"
 #include <iostream>
 
-FSM::FSM(ControlFSMData *data)
+FSM::FSM(std::shared_ptr<ControlFSMData> data)
     :_data(data)
 {
 

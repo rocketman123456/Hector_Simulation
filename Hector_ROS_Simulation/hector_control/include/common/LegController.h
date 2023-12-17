@@ -29,6 +29,7 @@ SOFTWARE.
 #include "../messages/LowlevelState.h"
 #include "../messages/LowLevelCmd.h"
 #include "Biped.h"
+#include <memory>
 
 
 /*!
@@ -83,7 +84,7 @@ SOFTWARE.
         void zeroCommand();
         void edampCommand(double gain);
         void updateData(const LowlevelState* state);
-        void updateCommand(LowlevelCmd* cmd);
+        void updateCommand(std::shared_ptr<LowlevelCmd> cmd);
         void setEnabled(bool enabled) {_legsEnabled = enabled;};
 
         LegControllerCommand commands[2];

@@ -16,7 +16,7 @@ struct ControlFSMData {
   LegController *_legController;
   DesiredStateCommand *_desiredStateCommand;
   IOInterface *_interface;
-  LowlevelCmd *_lowCmd;
+  std::shared_ptr<LowlevelCmd> _lowCmd;
   LowlevelState *_lowState;
 
   void sendRecv(){
