@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import mujoco as mj
 import numpy as np
 from mujoco_base import MuJoCoBase
