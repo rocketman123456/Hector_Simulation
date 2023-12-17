@@ -1,15 +1,17 @@
 #!/usr/bin/env python
-
+import os
 import mujoco as mj
 import numpy as np
-from mujoco_base import MuJoCoBase
+# import ros2_numpy as rnp
+
+from mujoco_sim_py.mujoco_base import MuJoCoBase
 from mujoco.glfw import glfw
+
 import rclpy
 from rclpy.node import Node
-import rospy
 import ament_index_python
 from ament_index_python.packages import get_package_share_directory
-# import rospkg
+
 from std_msgs.msg import Float32MultiArray, Bool
 from geometry_msgs.msg import Pose, Twist
 
@@ -25,23 +27,21 @@ class HectorSim(MuJoCoBase):
         # print('Actoator controls:', self.data.ctrl)
         # mj.set_mjcb_control(self.controller)
         # * Set subscriber and publisher
-        self.pubJoints = rospy.Publisher('/jointsPosVel', Float32MultiArray, queue_size=10)
-        self.pubPose = rospy.Publisher('/bodyPose', Pose, queue_size=10)
-        self.pubTwist = rospy.Publisher('/bodyTwist', Twist, queue_size=10)
+        # self.pubJoints = rospy.Publisher('/jointsPosVel', Float32MultiArray, queue_size=10)
+        # self.pubPose = rospy.Publisher('/bodyPose', Pose, queue_size=10)
+        # self.pubTwist = rospy.Publisher('/bodyTwist', Twist, queue_size=10)
 
-        rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback)
+        # rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback)
         # * show the model
         mj.mj_step(self.model, self.data)
         # enable contact force visualization
         self.opt.flags[mj.mjtVisFlag.mjVIS_CONTACTFORCE] = True
 
         # get framebuffer viewport
-        viewport_width, viewport_height = glfw.get_framebuffer_size(
-            self.window)
+        viewport_width, viewport_height = glfw.get_framebuffer_size(self.window)
         viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
         # Update scene and render
-        mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam,
-                           mj.mjtCatBit.mjCAT_ALL.value, self.scene)
+        mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam, mj.mjtCatBit.mjCAT_ALL.value, self.scene)
         mj.mjr_render(viewport, self.scene, self.context)
 
     def controlCallback(self, data):
@@ -71,9 +71,11 @@ class HectorSim(MuJoCoBase):
                 # get last 10 element of qpos and qvel
                 qp = self.data.qpos[-10:].copy()
                 qv = self.data.qvel[-10:].copy()
-                jointsPosVel.data = np.concatenate((qp, qv))
+                jointsPosVel.data = np.concatenate((qp, qv)).tolist()
+                # jointsPosVel.data = np.concatenate((qp, qv))
+                # jointsPosVel = ros2_numpy.msgify(Float32MultiArray, np.concatenate((qp, qv)))
 
-                self.pubJoints.publish(jointsPosVel)
+                # self.pubJoints.publish(jointsPosVel)
                 # * Publish body pose
                 bodyPose = Pose()
                 pos = self.data.sensor('BodyPos').data.copy()
@@ -87,7 +89,7 @@ class HectorSim(MuJoCoBase):
                 bodyPose.orientation.y = ori[2]
                 bodyPose.orientation.z = ori[3]
                 bodyPose.orientation.w = ori[0]
-                self.pubPose.publish(bodyPose)
+                # self.pubPose.publish(bodyPose)
                 # * Publish body twist
                 bodyTwist = Twist()
                 vel = self.data.sensor('BodyVel').data.copy()
@@ -100,19 +102,17 @@ class HectorSim(MuJoCoBase):
                 bodyTwist.angular.x = angVel[0]
                 bodyTwist.angular.y = angVel[1]
                 bodyTwist.angular.z = angVel[2]
-                self.pubTwist.publish(bodyTwist)
+                # self.pubTwist.publish(bodyTwist)
 
             if self.data.time >= self.simend:
                 break
 
             # get framebuffer viewport
-            viewport_width, viewport_height = glfw.get_framebuffer_size(
-                self.window)
+            viewport_width, viewport_height = glfw.get_framebuffer_size(self.window)
             viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
 
             # Update scene and render
-            mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam,
-                               mj.mjtCatBit.mjCAT_ALL.value, self.scene)
+            mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam, mj.mjtCatBit.mjCAT_ALL.value, self.scene)
             mj.mjr_render(viewport, self.scene, self.context)
 
             # swap OpenGL buffers (blocking call due to v-sync)
@@ -124,14 +124,15 @@ class HectorSim(MuJoCoBase):
         glfw.terminate()
 
 
-def main():
+def main(args=None):
     # ros init
-    rospy.init_node('hector_sim', anonymous=True)
-
+    rclpy.init(args=args)
+    # rospy.init_node('hector_sim', anonymous=True)
 
     # get xml path
-    hector_desc_path = get_package_share_directory('my_package_name')
-    xml_path = hector_desc_path + "/mjcf/hector.xml"
+    hector_desc_path = get_package_share_directory('hector_description')
+    xml_path = os.path.join(hector_desc_path, "mjcf/hector.xml")
+    # xml_path = hector_desc_path + "/mjcf/hector.xml"
     sim = HectorSim(xml_path)
     sim.reset()
     sim.simulate()

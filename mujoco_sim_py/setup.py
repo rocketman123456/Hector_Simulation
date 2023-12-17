@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'hector_sim = mujoco_sim_py.hector_sim:main',
         ],
     },
 )

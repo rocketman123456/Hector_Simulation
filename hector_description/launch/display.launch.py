@@ -7,9 +7,9 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description():
     ld = LaunchDescription()
 
-    urdf_tutorial_path = FindPackageShare('hector_description')
+    hector_description_path = FindPackageShare('hector_description')
     default_model_path = PathJoinSubstitution(['urdf', 'hector.urdf'])
-    default_rviz_config_path = PathJoinSubstitution([urdf_tutorial_path, 'rviz', 'urdf.rviz'])
+    default_rviz_config_path = PathJoinSubstitution([hector_description_path, 'rviz', 'urdf.rviz'])
 
     # These parameters are maintained for backwards compatibility
     gui_arg = DeclareLaunchArgument(name='gui', default_value='true', choices=['true', 'false'],
