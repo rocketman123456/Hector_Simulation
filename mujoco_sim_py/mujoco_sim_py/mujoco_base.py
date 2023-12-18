@@ -7,8 +7,9 @@ from rclpy.node import Node
 from std_msgs.msg import Bool
 
 
-class MuJoCoBase():
+class MuJoCoBase(Node):
     def __init__(self, xml_path):
+        super().__init__('mujoco_publisher')
         # For callback functions
         self.button_left = False
         self.button_middle = False
@@ -16,7 +17,7 @@ class MuJoCoBase():
         self.lastx = 0
         self.lasty = 0
         self.pause_flag = True
-        # self.pubSimState = rospy.Publisher('/pauseFlag',Bool, queue_size=10)
+
         # MuJoCo data structures
         self.model = mj.MjModel.from_xml_path(xml_path)  # MuJoCo model
         self.data = mj.MjData(self.model)                # MuJoCo data
@@ -33,14 +34,16 @@ class MuJoCoBase():
         mj.mjv_defaultCamera(self.cam)
         mj.mjv_defaultOption(self.opt)
         self.scene = mj.MjvScene(self.model, maxgeom=10000)
-        self.context = mj.MjrContext(
-            self.model, mj.mjtFontScale.mjFONTSCALE_150.value)
+        self.context = mj.MjrContext(self.model, mj.mjtFontScale.mjFONTSCALE_150.value)
 
         # install GLFW mouse and keyboard callbacks
         glfw.set_key_callback(self.window, self.keyboard)
         glfw.set_cursor_pos_callback(self.window, self.mouse_move)
         glfw.set_mouse_button_callback(self.window, self.mouse_button)
         glfw.set_scroll_callback(self.window, self.scroll)
+
+        # create ros2 publisher
+        self.pub_sim_state = self.create_publisher(Bool, 'pauseFlag', 10)
 
     def keyboard(self, window, key, scancode, act, mods):
         if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -51,7 +54,7 @@ class MuJoCoBase():
             mj.mj_forward(self.model, self.data)
             simState = Bool()
             simState.data = self.pause_flag
-            # self.pubSimState.publish(simState)
+            self.pub_sim_state.publish(simState)
 
     def mouse_button(self, window, button, act, mods):
         # update button state
@@ -61,7 +64,6 @@ class MuJoCoBase():
             window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS)
         self.button_right = (glfw.get_mouse_button(
             window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS)
-
         # update mouse position
         glfw.get_cursor_pos(window)
 
@@ -102,8 +104,7 @@ class MuJoCoBase():
 
     def scroll(self, window, xoffset, yoffset):
         action = mj.mjtMouse.mjMOUSE_ZOOM
-        mj.mjv_moveCamera(self.model, action, 0.0, -0.05 *
-                          yoffset, self.scene, self.cam)
+        mj.mjv_moveCamera(self.model, action, 0.0, -0.05 * yoffset, self.scene, self.cam)
 
     def simulate(self):
         while not glfw.window_should_close(self.window):

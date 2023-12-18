@@ -20,19 +20,13 @@ class HectorSim(MuJoCoBase):
     def __init__(self, xml_path):
         super().__init__(xml_path)
         self.simend = 1000.0
-        # print('Total number of DoFs in the model:', self.model.nv)
-        # print('Generalized positions:', self.data.qpos)
-        # print('Generalized velocities:', self.data.qvel)
-        # print('Actuator forces:', self.data.qfrc_actuator)
-        # print('Actoator controls:', self.data.ctrl)
-        # mj.set_mjcb_control(self.controller)
-        # * Set subscriber and publisher
-        # self.pubJoints = rospy.Publisher('/jointsPosVel', Float32MultiArray, queue_size=10)
-        # self.pubPose = rospy.Publisher('/bodyPose', Pose, queue_size=10)
-        # self.pubTwist = rospy.Publisher('/bodyTwist', Twist, queue_size=10)
+        print('Total number of DoFs in the model:', self.model.nv)
+        print('Generalized positions:', self.data.qpos)
+        print('Generalized velocities:', self.data.qvel)
+        print('Actuator forces:', self.data.qfrc_actuator)
+        print('Actoator controls:', self.data.ctrl)
 
-        # rospy.Subscriber("/jointsTorque", Float32MultiArray, self.controlCallback)
-        # * show the model
+        # show the model
         mj.mj_step(self.model, self.data)
         # enable contact force visualization
         self.opt.flags[mj.mjtVisFlag.mjVIS_CONTACTFORCE] = True
@@ -44,6 +38,14 @@ class HectorSim(MuJoCoBase):
         mj.mjv_updateScene(self.model, self.data, self.opt, None, self.cam, mj.mjtCatBit.mjCAT_ALL.value, self.scene)
         mj.mjr_render(viewport, self.scene, self.context)
 
+        # Set publisher
+        self.pub_joints = rospy.Publisher(Float32MultiArray, 'jointsPosVel', 10)
+        self.pub_pose = rospy.Publisher(Pose, 'bodyPose', 10)
+        self.pub_twist = rospy.Publisher(Twist, 'bodyTwist', 10)
+        # Set subscriber
+        self.sub_joints = self.create_subscription(Float32MultiArray, 'jointsTorque', self.controlCallback, 10)
+        self.sub_joints
+
     def controlCallback(self, data):
         self.data.ctrl[:] = data.data[:]
 
@@ -54,16 +56,11 @@ class HectorSim(MuJoCoBase):
         self.cam.distance = 5.0
         self.cam.lookat = np.array([0.0, 0.0, 1.5])
 
-    # def controller(self, model, data):
-    #   self.data.ctrl[0] = 100
-    #   pass
-
     def simulate(self):
         while not glfw.window_should_close(self.window):
             simstart = self.data.time
 
             while (self.data.time - simstart <= 1.0/60.0 and not self.pause_flag):
-
                 # Step simulation environment
                 mj.mj_step(self.model, self.data)
                 # * Publish joint positions and velocities
@@ -72,10 +69,7 @@ class HectorSim(MuJoCoBase):
                 qp = self.data.qpos[-10:].copy()
                 qv = self.data.qvel[-10:].copy()
                 jointsPosVel.data = np.concatenate((qp, qv)).tolist()
-                # jointsPosVel.data = np.concatenate((qp, qv))
-                # jointsPosVel = ros2_numpy.msgify(Float32MultiArray, np.concatenate((qp, qv)))
 
-                # self.pubJoints.publish(jointsPosVel)
                 # * Publish body pose
                 bodyPose = Pose()
                 pos = self.data.sensor('BodyPos').data.copy()
@@ -89,11 +83,11 @@ class HectorSim(MuJoCoBase):
                 bodyPose.orientation.y = ori[2]
                 bodyPose.orientation.z = ori[3]
                 bodyPose.orientation.w = ori[0]
-                # self.pubPose.publish(bodyPose)
+                
                 # * Publish body twist
                 bodyTwist = Twist()
-                vel = self.data.sensor('BodyVel').data.copy()
                 # get body velocity in world frame
+                vel = self.data.sensor('BodyVel').data.copy()
                 vel = self.data.qvel[:3].copy()
                 angVel = self.data.sensor('BodyGyro').data.copy()
                 bodyTwist.linear.x = vel[0]
@@ -102,7 +96,10 @@ class HectorSim(MuJoCoBase):
                 bodyTwist.angular.x = angVel[0]
                 bodyTwist.angular.y = angVel[1]
                 bodyTwist.angular.z = angVel[2]
-                # self.pubTwist.publish(bodyTwist)
+
+                self.pub_joints.publish(jointsPosVel)
+                self.pub_pose.publish(bodyPose)
+                self.pub_twist.publish(bodyTwist)
 
             if self.data.time >= self.simend:
                 break
@@ -132,10 +129,18 @@ def main(args=None):
     # get xml path
     hector_desc_path = get_package_share_directory('hector_description')
     xml_path = os.path.join(hector_desc_path, "mjcf/hector.xml")
-    # xml_path = hector_desc_path + "/mjcf/hector.xml"
-    sim = HectorSim(xml_path)
-    sim.reset()
-    sim.simulate()
+
+    mujoco_node = HectorSim(xml_path)
+    mujoco_node.reset()
+    mujoco_node.simulate()
+
+    # rclpy.spin(mujoco_node)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    # mujoco_node.destroy_node()
+    # rclpy.shutdown()
 
 
 if __name__ == "__main__":
