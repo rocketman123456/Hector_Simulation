@@ -2,14 +2,11 @@
 
 import mujoco as mj
 from mujoco.glfw import glfw
-import rclpy
-from rclpy.node import Node
 from std_msgs.msg import Bool
 
 
-class MuJoCoBase(Node):
+class MuJoCoBase():
     def __init__(self, xml_path):
-        super().__init__('mujoco_publisher')
         # For callback functions
         self.button_left = False
         self.button_middle = False
@@ -17,6 +14,7 @@ class MuJoCoBase(Node):
         self.lastx = 0
         self.lasty = 0
         self.pause_flag = True
+        self.simend = 1000.0
 
         # MuJoCo data structures
         self.model = mj.MjModel.from_xml_path(xml_path)  # MuJoCo model
@@ -41,9 +39,6 @@ class MuJoCoBase(Node):
         glfw.set_cursor_pos_callback(self.window, self.mouse_move)
         glfw.set_mouse_button_callback(self.window, self.mouse_button)
         glfw.set_scroll_callback(self.window, self.scroll)
-
-        # create ros2 publisher
-        self.pub_sim_state = self.create_publisher(Bool, 'pauseFlag', 10)
 
     def keyboard(self, window, key, scancode, act, mods):
         if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -106,12 +101,25 @@ class MuJoCoBase(Node):
         action = mj.mjtMouse.mjMOUSE_ZOOM
         mj.mjv_moveCamera(self.model, action, 0.0, -0.05 * yoffset, self.scene, self.cam)
 
+    def update(self):
+        raise NotImplementedError
+
+    def reset(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def controller(self, *args, **kwargs):
+        raise NotImplementedError
+
     def simulate(self):
         while not glfw.window_should_close(self.window):
             simstart = self.data.time
 
-            while (self.data.time - simstart < 1.0/60.0):
+            while (self.data.time - simstart < 1.0/60.0 and not self.pause_flag):
                 mj.mj_step(self.model, self.data)
+                self.update()
+
+            # if self.data.time >= self.simend:
+            #     break
 
             # get framebuffer viewport
             viewport_width, viewport_height = glfw.get_framebuffer_size(self.window)
@@ -129,8 +137,3 @@ class MuJoCoBase(Node):
 
         glfw.terminate()
 
-    def reset(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def controller(self, *args, **kwargs):
-        raise NotImplementedError
