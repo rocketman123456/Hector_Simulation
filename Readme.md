@@ -1,3 +1,31 @@
+# Pai simulation in mujoco
+Pai(π) is a small [biped robot](https://www.bilibili.com/video/BV1ah4y197Rx) build by GaoQing Company.
+
+![Pai(π) robot](img/image.png) 
+![Pai(π) robot](img/image-2.png)
+![Simulation in mujoco](img/image-1.png)
+
+## Controller Description
+The whole controller comes from the robot Hector.(Great Thanks!) 
+The improvements include:
+1. Pinocchio is used to compute forward kinematics and jacobians. 
+2. Linear kalman filter similar to MIT mini cheetah is used to do state estimation.
+
+There are still some bugs:
+- [ ] A bit toe-in
+- [ ] LK filter need some time to converge
+
+## How to start the simulation and controller?
+```
+roscore
+# in folder mujoco_sim/script/
+python pai_sim.py
+# in workspace, after source 
+rosrun pai_control pai_ctrl
+```
+The simulation is synchronized with controller, on the mujoco window, press 'space' key to resume or pause the simulation and control.
+
+---
 # Hector simulation in mujoco
 
 ## How to start the simulation and controller?
