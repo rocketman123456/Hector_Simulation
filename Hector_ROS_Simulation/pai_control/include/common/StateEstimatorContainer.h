@@ -45,7 +45,7 @@ SOFTWARE.
  */
 
 struct StateEstimate {
-    Vec4<double> contactEstimate;
+    Vec2<double> contactEstimate;
     Vec3<double> position;
     Vec3<double> vBody;
     Quat<double> orientation;
@@ -110,7 +110,9 @@ class StateEstimatorContainer {
             estimator->run();
         }
     }
-
+    void setContactPhase(Vec2<double>& phase) { 
+        _data.result->contactEstimate = phase; 
+    }
     // get result
     const StateEstimate&  getResult() {return *_data.result;}
 

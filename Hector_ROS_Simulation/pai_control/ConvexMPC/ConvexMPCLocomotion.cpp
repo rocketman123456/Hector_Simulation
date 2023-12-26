@@ -50,6 +50,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
   v_des_world = seResult.rBody.transpose() * v_des_robot; //世界坐标系下的期望速度
   Vec3<double> v_robot = seResult.vWorld;
 
+  data._stateEstimator->setContactPhase(contact_state);
   world_position_desired[0] += dt * v_des_world[0];
   world_position_desired[1] += dt * v_des_world[1];
   world_position_desired[2] = 0.27; //.5;;;
@@ -181,6 +182,7 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
   // gait
   Vec2<double> contactStates = gait->getContactSubPhase();
   Vec2<double> swingStates = gait->getSwingSubPhase();
+  // std::cout<<"contact states:"<<contactStates.transpose()<<std::endl;
 
   int *mpcTable = gait->mpc_gait();
   
@@ -196,8 +198,8 @@ void ConvexMPCLocomotion::run(ControlFSMData &data)
 
     double contactState = contactStates(foot);
     double swingState = swingStates(foot); 
-    std::cout << "swing " << foot << ": " << swingState << std::endl;
-    std::cout << "Contact " << foot << ": " << contactState << std::endl;
+    // std::cout << "swing " << foot << ": " << swingState << std::endl;
+    // std::cout << "Contact " << foot << ": " << contactState << std::endl;
     Vec3<double> pFootWorld;
 
     if (swingState > 0) // foot is in swing
@@ -408,7 +410,7 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData &data,
     Timer t_mpc_solve;
     t_mpc_solve.start();
     update_problem_data(p, v, quat, w, r, joint_angles ,yaw, weights, trajAll, Alpha_K, mpcTable);
-    printf("MPC Solve time %f ms\n", t_mpc_solve.getMs());
+    // printf("MPC Solve time %f ms\n", t_mpc_solve.getMs());
 
     //Get solution and update foot forces    
     for (int leg = 0; leg < 2; leg++)
@@ -425,7 +427,7 @@ void ConvexMPCLocomotion::updateMPCIfNeeded(int *mpcTable, ControlFSMData &data,
       }
       GRF_R = - seResult.rBody * GRF;
       GRM_R = - seResult.rBody * GRM;
-      std::cout << "RBody: " << seResult.rBody << std::endl;
+      // std::cout << "RBody: " << seResult.rBody << std::endl;
 
       for (int i = 0; i < 3; i++){
         f(i) = GRF_R(i);
